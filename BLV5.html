@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basilisk Liturgy — Command Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Share Tech Mono',monospace;background:#0a0a08;color:#c8c4b0;min-height:100vh;}
+.topbar{background:#0f0f0d;border-bottom:1px solid #b8922a;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;}
+.tb-title{font-family:'Cinzel',serif;font-size:16px;font-weight:600;color:#d4a83c;letter-spacing:0.12em;}
+.tb-meta{font-size:10px;color:#555;letter-spacing:0.1em;margin-top:2px;}
+.tb-right{text-align:right;}
+.sync{font-size:10px;letter-spacing:0.15em;color:#4a7c4e;}
+.toolbar{padding:8px 20px;display:flex;gap:6px;background:#0d0d0b;border-bottom:0.5px solid #1a1a16;flex-wrap:wrap;align-items:center;}
+.toolbar-right{margin-left:auto;display:flex;gap:6px;}
+.btn{background:none;border:0.5px solid #252520;color:#666;font-family:'Share Tech Mono',monospace;font-size:9px;padding:4px 10px;cursor:pointer;border-radius:2px;letter-spacing:0.08em;}
+.btn:hover{border-color:#b8922a;color:#b8922a;}
+.btn-g{border-color:#b8922a;color:#b8922a;}
+.btn-g:hover{background:#b8922a;color:#0a0a08;}
+.btn-r:hover{border-color:#7a3a3a;color:#7a3a3a;}
+.player-banner{display:none;background:#161610;border-bottom:0.5px solid #b8922a;padding:5px 20px;font-size:9px;color:#666;letter-spacing:0.12em;text-align:center;}
+.main{padding:14px 20px;display:flex;flex-direction:column;gap:14px;}
+.sec-label{font-size:9px;letter-spacing:0.22em;color:#555;border-bottom:0.5px solid #1e1e1a;padding-bottom:4px;margin-bottom:10px;}
+.op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;}
+.op-empty{font-size:11px;color:#333;padding:1rem 0;letter-spacing:0.1em;}
+.ocard{background:#111110;border:0.5px solid #222220;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;}
+.ocard-gravely{border-color:#5a2020;box-shadow:inset 0 0 0 1px #3a1010;}
+.ocard-kia{border-color:#1e1e1e;opacity:0.45;}
+.ocard-head{background:#161612;border-bottom:1px solid #b8922a;padding:8px 12px;display:flex;justify-content:space-between;align-items:flex-start;}
+.ocard-callsign{font-family:'Cinzel',serif;font-size:14px;font-weight:600;color:#d4a83c;letter-spacing:0.08em;}
+.ocard-sub{font-size:9px;color:#555;letter-spacing:0.1em;margin-top:2px;}
+.ocard-hr{display:flex;gap:5px;align-items:center;}
+.ac-tag{font-size:9px;padding:2px 7px;border:0.5px solid #2e2e28;border-radius:2px;color:#777;letter-spacing:0.08em;}
+.ocard-body{padding:10px 12px;display:flex;flex-direction:column;gap:7px;flex:1;}
+.ocard-foot{background:#0d0d0b;border-top:0.5px solid #1a1a18;padding:6px 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;}
+.brow{display:flex;flex-direction:column;gap:2px;}
+.blbl{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#777;}
+.btrack{height:4px;background:#181816;border-radius:1px;overflow:hidden;margin-top:2px;}
+.bfill-hp{background:#3a6e3e;border-radius:1px;transition:width 0.25s;}
+.bfill-cap{background:#a07820;border-radius:1px;transition:width 0.25s;}
+.bfill-cc{background:#6e2828;border-radius:1px;transition:width 0.25s;}
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.ctr{display:flex;align-items:center;gap:3px;}
+.cbtn{background:none;border:0.5px solid #222;color:#555;font-family:'Share Tech Mono',monospace;font-size:10px;width:16px;height:16px;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;}
+.cbtn:hover{border-color:#b8922a;color:#b8922a;}
+.cval{font-size:10px;min-width:16px;text-align:center;color:#c8c4b0;}
+.pips{display:flex;gap:2px;flex-wrap:wrap;margin-top:2px;}
+.pip{width:7px;height:7px;border-radius:50%;border:0.5px solid #2e2e28;cursor:pointer;}
+.pip-ok{background:#1c361c;border-color:#2a4e2a;}
+.pip-lost{background:#5a1e1e;border-color:#7a2a2a;}
+.traits{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;}
+.trait{background:#0d0d0b;border:0.5px solid #1e1e1c;border-radius:2px;padding:3px 2px;text-align:center;}
+.tname{font-size:7px;color:#444;letter-spacing:0.08em;}
+.tval{font-size:12px;font-weight:500;line-height:1.3;}
+.tmod{font-size:7px;color:#555;}
+.t-hi .tval{color:#3a6e3e;}
+.t-mi .tval{color:#a07820;}
+.t-lo .tval{color:#6e2828;}
+.t-ba .tval{color:#b8b0a0;}
+.weapons{display:flex;flex-direction:column;gap:3px;margin-top:2px;}
+.weapons-label{font-size:8px;letter-spacing:0.15em;color:#444;margin-bottom:2px;}
+.wrow{display:flex;justify-content:space-between;align-items:center;padding:3px 6px;background:#0d0d0b;border:0.5px solid #1a1a18;border-radius:2px;}
+.wname{font-size:9px;color:#a09080;}
+.wstats{display:flex;gap:8px;align-items:center;}
+.wdmg{font-size:9px;color:#b8922a;}
+.wtrait{font-size:8px;color:#555;padding:1px 4px;border:0.5px solid #222;border-radius:1px;}
+.wnotes{font-size:8px;color:#444;font-style:italic;}
+.tm-row{display:flex;gap:3px;}
+.tm-slot{flex:1;background:#0d0d0b;border:0.5px solid #1a1a18;border-radius:2px;padding:3px 5px;font-size:8px;color:#444;text-align:center;letter-spacing:0.06em;}
+.tm-f{border-color:#2a2a26;color:#777;}
+.tm-lk{opacity:0.2;}
+.bgrid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.panel{background:#111110;border:0.5px solid #222220;border-radius:3px;padding:12px;}
+.crow{display:flex;justify-content:space-between;align-items:flex-start;padding:5px 0;border-bottom:0.5px solid #161614;font-size:11px;}
+.crow:last-child{border-bottom:none;}
+.crow-left{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
+.crow-note{font-size:8px;color:#3a3a36;padding-left:9px;}
+.crow-right{display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:8px;}
+.cf{font-size:9px;color:#444;}
+.cm{font-size:9px;color:#555;}
+.cdot{width:5px;height:5px;border-radius:50%;display:inline-block;margin-right:3px;}
+.cdot-a{background:#3a6e3e;}
+.cdot-c{background:#a07820;}
+.cdot-k{background:#6e2828;}
+.cg2{border-left:2px solid #a07820;padding-left:6px;}
+.mrow{padding:5px 0;border-bottom:0.5px solid #161614;}
+.mrow:last-child{border-bottom:none;}
+.mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;}
+.mtitle{color:#b8b0a0;font-size:11px;margin-bottom:2px;}
+.mmeta{display:flex;gap:8px;font-size:9px;color:#444;flex-wrap:wrap;}
+.rs{color:#3a6e3e;}
+.rp{color:#a07820;}
+.rf{color:#6e2828;}
+.ticker{font-size:8px;color:#1e1e1c;letter-spacing:0.1em;padding:7px 20px;border-top:0.5px solid #141412;text-align:center;overflow:hidden;white-space:nowrap;}
+.mbg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:100;overflow-y:auto;padding:20px 8px;}
+.mbg.open{display:block;}
+.modal{background:#0f0f0d;border:0.5px solid #b8922a;border-radius:3px;max-width:680px;margin:0 auto;}
+.mhdr{background:#161612;border-bottom:1px solid #b8922a;padding:11px 16px;display:flex;justify-content:space-between;align-items:center;}
+.mtit{font-family:'Cinzel',serif;font-size:13px;color:#d4a83c;letter-spacing:0.1em;}
+.mclose{background:none;border:none;color:#555;font-size:18px;cursor:pointer;line-height:1;}
+.mclose:hover{color:#b8922a;}
+.mbody{padding:16px;}
+.msec{font-size:9px;letter-spacing:0.2em;color:#555;margin:14px 0 8px;border-bottom:0.5px solid #1e1e1c;padding-bottom:3px;}
+.msec:first-child{margin-top:0;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.gtm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.field{display:flex;flex-direction:column;gap:3px;}
+.field label{font-size:9px;color:#555;letter-spacing:0.1em;}
+.field input,.field select{background:#080808;border:0.5px solid #1e1e1c;color:#c8c4b0;font-family:'Share Tech Mono',monospace;font-size:11px;padding:5px 8px;border-radius:2px;width:100%;}
+.field input:focus,.field select:focus{outline:none;border-color:#b8922a;}
+.field select option{background:#0f0f0d;}
+.fhint{font-size:8px;color:#b8922a;margin-top:2px;min-height:11px;}
+.tier-hint{font-size:8px;color:#3a3a36;margin-top:2px;}
+.fbwrap{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap;}
+.fbtn{background:none;border:0.5px solid #1e1e1c;color:#444;font-family:'Share Tech Mono',monospace;font-size:8px;padding:2px 5px;cursor:pointer;border-radius:2px;}
+.fbtn:hover{border-color:#b8922a;color:#b8922a;}
+.fdiv{width:100%;height:0.5px;background:#1e1e1c;margin:3px 0;}
+.mfoot{padding:10px 16px;border-top:0.5px solid #1e1e1c;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
+.mb{background:none;border:0.5px solid #1e1e1c;color:#555;font-family:'Share Tech Mono',monospace;font-size:10px;padding:6px 14px;cursor:pointer;border-radius:2px;letter-spacing:0.08em;}
+.mb:hover{border-color:#b8922a;color:#b8922a;}
+.mb-p{border-color:#b8922a;color:#b8922a;}
+.mb-p:hover{background:#b8922a;color:#0a0a08;}
+.mb-d{border-color:#2a1a1a;color:#6e2828;}
+.mb-d:hover{background:#6e2828;color:#fff;}
+.wsel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+.wsel-item{display:flex;flex-direction:column;gap:3px;}
+.wsel-item label{font-size:9px;color:#555;letter-spacing:0.1em;}
+.wsel-item select{background:#080808;border:0.5px solid #1e1e1c;color:#c8c4b0;font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 6px;border-radius:2px;width:100%;}
+.wsel-item select:focus{outline:none;border-color:#b8922a;}
+.wsel-item select option{background:#0f0f0d;}
+.chk-row{display:flex;flex-direction:row;align-items:center;gap:8px;}
+.chk-row label{font-size:9px;color:#555;letter-spacing:0.1em;}
+.chk-row input[type=checkbox]{width:auto;}
+@media(max-width:600px){.main{padding:10px 12px;}.bgrid2{grid-template-columns:1fr;}.toolbar{padding:6px 12px;}.topbar{padding:8px 12px;}.op-grid{grid-template-columns:1fr;}.traits{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:520px){.g2{grid-template-columns:1fr;}.g3{grid-template-columns:1fr 1fr;}.gtm{grid-template-columns:1fr;}.mbody{padding:12px;}.wsel-grid{grid-template-columns:1fr;}}
+@media(max-width:360px){.g3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="tb-title">BASILISK LITURGY — COMMAND TERMINAL</div>
+    <div class="tb-meta">OPERATION PERSEUS // ORBIT OF VORNAXIS // 999.M41</div>
+  </div>
+  <div class="tb-right">
+    <div class="sync" id="sync-status">TERMINAL ACTIVE</div>
+    <div class="tb-meta" id="clock">--:--:--</div>
+  </div>
+</div>
+
+<div class="player-banner" id="player-banner">VIEWING AS PLAYER — READ ONLY // CONTACT YOUR GM FOR UPDATES</div>
+
+<div class="toolbar" id="gm-toolbar">
+  <button class="btn btn-g" onclick="openModal('add-op')">+ OPERATIVE</button>
+  <button class="btn btn-g" onclick="openModal('add-tm')">+ TEAM MEMBER</button>
+  <button class="btn btn-g" onclick="openModal('add-mission')">+ MISSION</button>
+  <button class="btn" onclick="resetAllCAP()">RESET CAP</button>
+  <button class="btn btn-r" onclick="confirmReset()">RESET SESSION</button>
+  <div class="toolbar-right">
+    <button class="btn btn-g" onclick="openModal('library')">ITEM LIBRARY</button>
+    <button class="btn" onclick="copyPlayerURL()">PLAYER LINK</button>
+  </div>
+</div>
+
+<div class="main">
+  <div>
+    <div class="sec-label">LEAD OPERATIVES // ACTIVE DEPLOYMENT</div>
+    <div class="op-grid" id="op-grid"></div>
+  </div>
+  <div class="bgrid2">
+    <div class="panel">
+      <div class="sec-label">CAMP ROSTER // VORNAXIS SURFACE</div>
+      <div id="camp-list"></div>
+    </div>
+    <div class="panel">
+      <div class="sec-label">MISSION LOG // OPERATION PERSEUS</div>
+      <div id="mission-list"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="sec-label">ITEM LIBRARY // RELICS &amp; EQUIPMENT</div>
+    <div id="library-list"></div>
+  </div>
+</div>
+
+<div class="ticker" id="ticker">44:IX:THETA:PERSEUS:PHASE_1_ACTIVATE // THE INARCADINE AWAITS // INNOCENCE PROVES NOTHING // AWAIT FURTHER ORDERS</div>
+
+<!-- ADD OPERATIVE MODAL -->
+<div class="mbg" id="modal-add-op">
+<div class="modal">
+  <div class="mhdr"><div class="mtit">REQUISITION — LEAD OPERATIVE</div><button class="mclose" onclick="closeModal('add-op')">&#x2715;</button></div>
+  <div class="mbody">
+    <div class="msec">IDENTIFICATION</div>
+    <div class="g2">
+      <div class="field"><label>CALLSIGN</label><input id="op-callsign" type="text" placeholder="e.g. ATRIOX" style="text-transform:uppercase;"></div>
+      <div class="field"><label>PLAYER NAME</label><input id="op-player" type="text"></div>
+    </div>
+    <div class="g2" style="margin-top:10px;">
+      <div class="field">
+        <label>FACTION</label>
+        <input id="op-faction" type="text" placeholder="Type or select below" style="text-transform:uppercase;" oninput="onFactionInput()">
+        <div class="fbwrap">
+          <button class="fbtn" onclick="pickFaction('ADEPTUS ARBITES')">ARBITES</button>
+          <button class="fbtn" onclick="pickFaction('CADIANS')">CADIANS</button>
+          <button class="fbtn" onclick="pickFaction('DEATH KORPS OF KRIEG')">KRIEG</button>
+          <button class="fbtn" onclick="pickFaction('TEMPESTUS AQUILONS')">AQUILONS</button>
+          <button class="fbtn" onclick="pickFaction('TALLARN DESERT RAIDERS')">TALLARN</button>
+          <button class="fbtn" onclick="pickFaction('KASKRIN')">KASKRIN</button>
+          <button class="fbtn" onclick="pickFaction('ADEPTA SORORITAS')">SORORITAS</button>
+          <button class="fbtn" onclick="pickFaction('IMPERIAL NAVY BREACHERS')">NAVY</button>
+          <button class="fbtn" onclick="pickFaction('ORDO HERETICUS AGENT')">HERETICUS</button>
+          <button class="fbtn" onclick="pickFaction('ORDO XENOS AGENT')">XENOS</button>
+          <button class="fbtn" onclick="pickFaction('ORDO MALLEUS AGENT')">MALLEUS</button>
+          <button class="fbtn" onclick="pickFaction('MILITARUM AUXILIA — RATLING')">RATLING</button>
+          <button class="fbtn" onclick="pickFaction('MILITARUM AUXILIA — OGRYN')">OGRYN</button>
+          <div class="fdiv"></div>
+          <button class="fbtn" onclick="pickFaction('ULTRAMARINES')">ULTRAMARINES</button>
+          <button class="fbtn" onclick="pickFaction('BLOOD ANGELS')">BLOOD ANGELS</button>
+          <button class="fbtn" onclick="pickFaction('DARK ANGELS')">DARK ANGELS</button>
+          <button class="fbtn" onclick="pickFaction('SPACE WOLVES')">SPACE WOLVES</button>
+          <button class="fbtn" onclick="pickFaction('IMPERIAL FISTS')">IMP. FISTS</button>
+          <button class="fbtn" onclick="pickFaction('SALAMANDERS')">SALAMANDERS</button>
+          <button class="fbtn" onclick="pickFaction('RAVEN GUARD')">RAVEN GUARD</button>
+          <button class="fbtn" onclick="pickFaction('IRON HANDS')">IRON HANDS</button>
+          <button class="fbtn" onclick="pickFaction('WHITE SCARS')">WHITE SCARS</button>
+          <button class="fbtn" onclick="pickFaction('BLACK TEMPLARS')">BLK. TEMPLARS</button>
+        </div>
+        <div class="fhint" id="faction-hint"></div>
+      </div>
+      <div class="field"><label>CLASSIS</label><select id="op-classis"><option value="MORTALIS">MORTALIS</option><option value="ASCENSIONE">ASCENSIONE</option></select></div>
+    </div>
+    <div class="msec">VITALS</div>
+    <div class="g3">
+      <div class="field"><label>HP MAX</label><input id="op-hp" type="number" min="1" max="60" value="12"></div>
+      <div class="field"><label>ARMOR CLASS</label><input id="op-ac" type="number" min="1" max="25" value="15"></div>
+      <div class="field"><label>CAP MAX</label><input id="op-cap" type="number" min="1" max="5" value="3"></div>
+    </div>
+    <div class="msec">TRAIT METRICS (1-20)</div>
+    <div class="g3">
+      <div class="field"><label>CA</label><input id="op-ca" type="number" min="1" max="20" value="10" oninput="updateTierHint('ca','CA')"><div class="tier-hint" id="hint-ca"></div></div>
+      <div class="field"><label>FTH</label><input id="op-fth" type="number" min="1" max="20" value="10" oninput="updateTierHint('fth','FTH')"><div class="tier-hint" id="hint-fth"></div></div>
+      <div class="field"><label>TCH</label><input id="op-tch" type="number" min="1" max="20" value="8" oninput="updateTierHint('tch','TCH')"><div class="tier-hint" id="hint-tch"></div></div>
+      <div class="field"><label>MHT</label><input id="op-mht" type="number" min="1" max="20" value="10" oninput="updateTierHint('mht','MHT')"><div class="tier-hint" id="hint-mht"></div></div>
+      <div class="field"><label>PER</label><input id="op-per" type="number" min="1" max="20" value="10" oninput="updateTierHint('per','PER')"><div class="tier-hint" id="hint-per"></div></div>
+      <div class="field"><label>AGL</label><input id="op-agl" type="number" min="1" max="20" value="8" oninput="updateTierHint('agl','AGL')"><div class="tier-hint" id="hint-agl"></div></div>
+    </div>
+    <div class="msec">ARMAMENTA</div>
+    <div class="fhint" id="op-weapon-preset-note"></div>
+    <div class="wsel-grid">
+      <div class="wsel-item"><label>PRIMARY</label><select id="op-w-primary"></select></div>
+      <div class="wsel-item"><label>SIDEARM</label><select id="op-w-sidearm"></select></div>
+      <div class="wsel-item"><label>MELEE</label><select id="op-w-melee"></select></div>
+      <div class="wsel-item"><label>UTILITY</label><select id="op-w-utility"></select></div>
+    </div>
+    <div class="msec">ACTIVE TEAM MEMBERS</div>
+    <div class="gtm">
+      <div class="field"><label>TM SLOT 1</label><input id="op-tm1" type="text" placeholder="Callsign or blank" style="text-transform:uppercase;"></div>
+      <div class="field"><label>TM SLOT 2</label><input id="op-tm2" type="text" placeholder="Callsign or blank" style="text-transform:uppercase;"></div>
+      <div class="field"><label>TM SLOT 3</label><input id="op-tm3" type="text" placeholder="Callsign or blank" style="text-transform:uppercase;"></div>
+    </div>
+  </div>
+  <div class="mfoot">
+    <button class="mb" onclick="closeModal('add-op')">CANCEL</button>
+    <button class="mb mb-p" onclick="addOperative()">REQUISITION OPERATIVE</button>
+  </div>
+</div>
+</div>
+
+<!-- EDIT OPERATIVE MODAL -->
+<div class="mbg" id="modal-edit-op">
+<div class="modal">
+  <div class="mhdr"><div class="mtit">EDIT OPERATIVE</div><button class="mclose" onclick="closeModal('edit-op')">&#x2715;</button></div>
+  <div class="mbody">
+    <input type="hidden" id="edit-op-id">
+    <div class="msec">IDENTIFICATION</div>
+    <div class="g2">
+      <div class="field"><label>CALLSIGN</label><input id="edit-callsign" type="text" style="text-transform:uppercase;"></div>
+      <div class="field"><label>PLAYER NAME</label><input id="edit-player" type="text"></div>
+    </div>
+    <div class="g2" style="margin-top:10px;">
+      <div class="field">
+        <label>FACTION</label>
+        <input id="edit-faction" type="text" style="text-transform:uppercase;">
+        <div class="fbwrap">
+          <button class="fbtn" onclick="setEF('ADEPTUS ARBITES')">ARBITES</button>
+          <button class="fbtn" onclick="setEF('CADIANS')">CADIANS</button>
+          <button class="fbtn" onclick="setEF('DEATH KORPS OF KRIEG')">KRIEG</button>
+          <button class="fbtn" onclick="setEF('TEMPESTUS AQUILONS')">AQUILONS</button>
+          <button class="fbtn" onclick="setEF('TALLARN DESERT RAIDERS')">TALLARN</button>
+          <button class="fbtn" onclick="setEF('KASKRIN')">KASKRIN</button>
+          <button class="fbtn" onclick="setEF('ADEPTA SORORITAS')">SORORITAS</button>
+          <button class="fbtn" onclick="setEF('IMPERIAL NAVY BREACHERS')">NAVY</button>
+          <button class="fbtn" onclick="setEF('ORDO HERETICUS AGENT')">HERETICUS</button>
+          <button class="fbtn" onclick="setEF('ORDO XENOS AGENT')">XENOS</button>
+          <button class="fbtn" onclick="setEF('ORDO MALLEUS AGENT')">MALLEUS</button>
+          <div class="fdiv"></div>
+          <button class="fbtn" onclick="setEF('ULTRAMARINES')">ULTRAMARINES</button>
+          <button class="fbtn" onclick="setEF('BLOOD ANGELS')">BLOOD ANGELS</button>
+          <button class="fbtn" onclick="setEF('DARK ANGELS')">DARK ANGELS</button>
+          <button class="fbtn" onclick="setEF('SPACE WOLVES')">SPACE WOLVES</button>
+          <button class="fbtn" onclick="setEF('IMPERIAL FISTS')">IMP. FISTS</button>
+          <button class="fbtn" onclick="setEF('SALAMANDERS')">SALAMANDERS</button>
+          <button class="fbtn" onclick="setEF('RAVEN GUARD')">RAVEN GUARD</button>
+          <button class="fbtn" onclick="setEF('IRON HANDS')">IRON HANDS</button>
+          <button class="fbtn" onclick="setEF('WHITE SCARS')">WHITE SCARS</button>
+          <button class="fbtn" onclick="setEF('BLACK TEMPLARS')">BLK. TEMPLARS</button>
+        </div>
+      </div>
+      <div class="field"><label>CLASSIS</label><select id="edit-classis"><option value="MORTALIS">MORTALIS</option><option value="ASCENSIONE">ASCENSIONE</option></select></div>
+    </div>
+    <div class="msec">VITALS</div>
+    <div class="g3">
+      <div class="field"><label>HP CURRENT</label><input id="edit-hp-cur" type="number" min="0"></div>
+      <div class="field"><label>HP MAX</label><input id="edit-hp-max" type="number" min="1"></div>
+      <div class="field"><label>ARMOR CLASS</label><input id="edit-ac" type="number" min="1" max="25"></div>
+    </div>
+    <div class="g3" style="margin-top:10px;">
+      <div class="field"><label>CAP CURRENT</label><input id="edit-cap-cur" type="number" min="0"></div>
+      <div class="field"><label>CAP MAX</label><input id="edit-cap-max" type="number" min="1" max="5"></div>
+      <div class="field"><label>CC (0-20)</label><input id="edit-cc" type="number" min="0" max="20"></div>
+    </div>
+    <div class="msec">TRAITS</div>
+    <div class="g3">
+      <div class="field"><label>CA</label><input id="edit-ca" type="number" min="1" max="20"></div>
+      <div class="field"><label>FTH</label><input id="edit-fth" type="number" min="1" max="20"></div>
+      <div class="field"><label>TCH</label><input id="edit-tch" type="number" min="1" max="20"></div>
+      <div class="field"><label>MHT</label><input id="edit-mht" type="number" min="1" max="20"></div>
+      <div class="field"><label>PER</label><input id="edit-per" type="number" min="1" max="20"></div>
+      <div class="field"><label>AGL</label><input id="edit-agl" type="number" min="1" max="20"></div>
+    </div>
+    <div class="msec">ARMAMENTA</div>
+    <div class="wsel-grid">
+      <div class="wsel-item"><label>PRIMARY</label><select id="edit-w-primary"></select></div>
+      <div class="wsel-item"><label>SIDEARM</label><select id="edit-w-sidearm"></select></div>
+      <div class="wsel-item"><label>MELEE</label><select id="edit-w-melee"></select></div>
+      <div class="wsel-item"><label>UTILITY</label><select id="edit-w-utility"></select></div>
+    </div>
+    <div class="msec">INVENTORY</div>
+    <div id="edit-inv-slots"></div>
+    <div class="msec">STATUS AND TEAM MEMBERS</div>
+    <div class="g2" style="margin-bottom:10px;">
+      <div class="field"><label>STATUS</label><select id="edit-status"><option value="active">ACTIVE</option><option value="gravely">GRAVELY WOUNDED</option><option value="kia">KIA</option></select></div>
+    </div>
+    <div class="gtm">
+      <div class="field"><label>TM SLOT 1</label><input id="edit-tm1" type="text" style="text-transform:uppercase;"></div>
+      <div class="field"><label>TM SLOT 2</label><input id="edit-tm2" type="text" style="text-transform:uppercase;"></div>
+      <div class="field"><label>TM SLOT 3</label><input id="edit-tm3" type="text" style="text-transform:uppercase;"></div>
+    </div>
+  </div>
+  <div class="mfoot">
+    <button class="mb mb-d" onclick="deleteOperative()">DELETE</button>
+    <button class="mb" onclick="closeModal('edit-op')">CANCEL</button>
+    <button class="mb mb-p" onclick="saveOperative()">SAVE CHANGES</button>
+  </div>
+</div>
+</div>
+
+<!-- ADD TEAM MEMBER MODAL -->
+<div class="mbg" id="modal-add-tm">
+<div class="modal">
+  <div class="mhdr"><div class="mtit">LOG TEAM MEMBER</div><button class="mclose" onclick="closeModal('add-tm')">&#x2715;</button></div>
+  <div class="mbody">
+    <div class="msec">IDENTIFICATION</div>
+    <div class="g2">
+      <div class="field"><label>DESIGNATION</label><input id="tm-name" type="text" placeholder="Name or callsign" style="text-transform:uppercase;"></div>
+      <div class="field"><label>FACTION</label><input id="tm-faction" type="text" placeholder="e.g. DEATH KORPS" style="text-transform:uppercase;"></div>
+    </div>
+    <div class="g2" style="margin-top:10px;">
+      <div class="field"><label>GRADE</label><select id="tm-grade"><option value="I">GRADE I</option><option value="II">GRADE II — NAMED</option></select></div>
+      <div class="field"><label>ASSIGNED LEADER</label><select id="tm-leader"><option value="">— UNASSIGNED —</option></select></div>
+    </div>
+    <div class="g3" style="margin-top:10px;">
+      <div class="field"><label>STATUS</label><select id="tm-status"><option value="active">ACTIVE</option><option value="camp">CAMP</option><option value="kia">KIA</option></select></div>
+      <div class="field"><label>HP</label><input id="tm-hp" type="number" min="1" max="40" value="6"></div>
+      <div class="field"><label>MISSIONS SURVIVED</label><input id="tm-missions" type="number" min="0" value="0"></div>
+    </div>
+    <div class="msec">ARMAMENTA</div>
+    <div class="wsel-grid">
+      <div class="wsel-item"><label>PRIMARY</label><select id="tm-w-primary"></select></div>
+      <div class="wsel-item"><label>MELEE</label><select id="tm-w-melee"></select></div>
+    </div>
+    <div class="msec">CONDITION</div>
+    <div class="g2">
+      <div class="chk-row"><label>SHAKEN</label><input id="tm-shaken" type="checkbox"></div>
+      <div class="field"><label>MISSIONS UNTIL RECOVERED</label><input id="tm-recovery" type="number" min="0" value="0"></div>
+    </div>
+    <div class="msec">NOTES AND ABILITIES</div>
+    <div class="field"><label>SPECIAL ABILITY</label><input id="tm-ability" type="text" placeholder="e.g. Re-roll failed FTH checks once per mission"></div>
+    <div class="field" style="margin-top:8px;"><label>NOTES</label><input id="tm-notes" type="text" placeholder="Optional narrative note"></div>
+  </div>
+  <div class="mfoot">
+    <button class="mb" onclick="closeModal('add-tm')">CANCEL</button>
+    <button class="mb mb-p" onclick="addTM()">LOG TEAM MEMBER</button>
+  </div>
+</div>
+</div>
+
+<!-- EDIT TEAM MEMBER MODAL -->
+<div class="mbg" id="modal-edit-tm">
+<div class="modal">
+  <div class="mhdr"><div class="mtit">EDIT TEAM MEMBER</div><button class="mclose" onclick="closeModal('edit-tm')">&#x2715;</button></div>
+  <div class="mbody">
+    <input type="hidden" id="etm-idx">
+    <div class="msec">IDENTIFICATION</div>
+    <div class="g2">
+      <div class="field"><label>DESIGNATION</label><input id="etm-name" type="text" style="text-transform:uppercase;"></div>
+      <div class="field"><label>FACTION</label><input id="etm-faction" type="text" style="text-transform:uppercase;"></div>
+    </div>
+    <div class="g2" style="margin-top:10px;">
+      <div class="field"><label>GRADE</label><select id="etm-grade"><option value="I">GRADE I</option><option value="II">GRADE II — NAMED</option></select></div>
+      <div class="field"><label>ASSIGNED LEADER</label><select id="etm-leader"><option value="">— UNASSIGNED —</option></select></div>
+    </div>
+    <div class="g3" style="margin-top:10px;">
+      <div class="field"><label>STATUS</label><select id="etm-status"><option value="active">ACTIVE</option><option value="camp">CAMP</option><option value="kia">KIA</option></select></div>
+      <div class="field"><label>HP</label><input id="etm-hp" type="number" min="1" max="40"></div>
+      <div class="field"><label>MISSIONS SURVIVED</label><input id="etm-missions" type="number" min="0"></div>
+    </div>
+    <div class="msec">ARMAMENTA</div>
+    <div class="wsel-grid">
+      <div class="wsel-item"><label>PRIMARY</label><select id="etm-w-primary"></select></div>
+      <div class="wsel-item"><label>MELEE</label><select id="etm-w-melee"></select></div>
+    </div>
+    <div class="msec">CONDITION</div>
+    <div class="g2">
+      <div class="chk-row"><label>SHAKEN</label><input id="etm-shaken" type="checkbox"></div>
+      <div class="field"><label>MISSIONS UNTIL RECOVERED</label><input id="etm-recovery" type="number" min="0"></div>
+    </div>
+    <div class="msec">NOTES AND ABILITIES</div>
+    <div class="field"><label>SPECIAL ABILITY</label><input id="etm-ability" type="text"></div>
+    <div class="field" style="margin-top:8px;"><label>NOTES</label><input id="etm-notes" type="text"></div>
+  </div>
+  <div class="mfoot">
+    <button class="mb mb-d" onclick="deleteTM()">DELETE</button>
+    <button class="mb" onclick="closeModal('edit-tm')">CANCEL</button>
+    <button class="mb mb-p" onclick="saveTM()">SAVE CHANGES</button>
+  </div>
+</div>
+</div>
+
+<!-- ADD MISSION MODAL -->
+<div class="mbg" id="modal-add-mission">
+<div class="modal">
+  <div class="mhdr"><div class="mtit">LOG MISSION</div><button class="mclose" onclick="closeModal('add-mission')">&#x2715;</button></div>
+  <div class="mbody">
+    <div class="msec">MISSION DATA</div>
+    <div class="field" style="margin-bottom:10px;"><label>MISSION TITLE</label><input id="mis-title" type="text" placeholder="e.g. PHASE 3 — VOID DECK" style="text-transform:uppercase;"></div>
+    <div class="g3">
+      <div class="field"><label>RESULT</label><select id="mis-result"><option value="success">SUCCESS</option><option value="partial">PARTIAL SUCCESS</option><option value="fail">FAILURE</option></select></div>
+      <div class="field"><label>CASUALTIES</label><input id="mis-cas" type="number" min="0" value="0"></div>
+      <div class="field"><label>DATE IN-UNIVERSE</label><input id="mis-date" type="text" value="999.M41"></div>
+    </div>
+    <div class="msec">OBJECTIVES</div>
+    <div class="g2">
+      <div class="chk-row"><label>PRIMARY OBJECTIVE MET</label><input id="mis-primary" type="checkbox"></div>
+      <div class="chk-row"><label>SECONDARY OBJECTIVE MET</label><input id="mis-secondary" type="checkbox"></div>
+    </div>
+    <div class="msec">RESOURCES AND INTELLIGENCE</div>
+    <div class="g2">
+      <div class="field"><label>TOTAL CAP SPENT</label><input id="mis-cap" type="number" min="0" value="0"></div>
+      <div class="field"><label>INTEL RECOVERED</label><input id="mis-intel" type="text" placeholder="e.g. Vox log 44-IX recovered"></div>
+    </div>
+  </div>
+  <div class="mfoot">
+    <button class="mb" onclick="closeModal('add-mission')">CANCEL</button>
+    <button class="mb mb-p" onclick="addMission()">LOG MISSION</button>
+  </div>
+</div>
+</div>
+
+<script>
+var WEAPONS={
+  ranged:[
+    {name:'--',dmg:'',trait:'',notes:''},
+    {name:'Lasgun',dmg:'1d8',trait:'PER',notes:''},
+    {name:'Laspistol',dmg:'1d6',trait:'PER',notes:'Sidearm'},
+    {name:'Autopistol',dmg:'1d6',trait:'PER',notes:'Sidearm'},
+    {name:'Autogun',dmg:'1d8',trait:'PER',notes:''},
+    {name:'Shotgun',dmg:'2d6',trait:'PER',notes:'Max 6in full dmg'},
+    {name:'Hot-shot Lasgun',dmg:'1d10',trait:'PER',notes:'Ignores 1 AC'},
+    {name:'Hot-shot Laspistol',dmg:'1d8',trait:'PER',notes:'Sidearm ignores 1 AC'},
+    {name:'Bolter',dmg:'1d12',trait:'PER',notes:''},
+    {name:'Bolt Pistol',dmg:'1d10',trait:'PER',notes:'Sidearm'},
+    {name:'Boltgun Storm',dmg:'2d8',trait:'PER',notes:'Astartes variant'},
+    {name:'Plasma Gun',dmg:'2d10',trait:'PER',notes:'Overcharge risk'},
+    {name:'Meltagun',dmg:'3d8',trait:'PER',notes:'Short range'},
+    {name:'Flamer',dmg:'2d6',trait:'PER',notes:'Cone no cover'},
+    {name:'Sniper Rifle',dmg:'2d8',trait:'PER',notes:'Ignores cover'},
+    {name:'Heavy Bolter',dmg:'2d10',trait:'PER',notes:'Requires setup'},
+    {name:'Grenade Launcher',dmg:'2d8',trait:'PER',notes:''}
+  ],
+  melee:[
+    {name:'--',dmg:'',trait:'',notes:''},
+    {name:'Combat Knife',dmg:'1d6',trait:'MHT',notes:''},
+    {name:'Chainsword',dmg:'1d10',trait:'MHT',notes:''},
+    {name:'Power Sword',dmg:'1d12',trait:'MHT',notes:''},
+    {name:'Power Fist',dmg:'2d8',trait:'MHT',notes:'Ignores 2 AC'},
+    {name:'Thunder Hammer',dmg:'2d10',trait:'MHT',notes:'Stun on crit'},
+    {name:'Chainaxe',dmg:'1d10',trait:'MHT',notes:''},
+    {name:'Force Sword',dmg:'1d12',trait:'MHT',notes:'Psyker only'},
+    {name:'Shock Maul',dmg:'1d8',trait:'MHT',notes:'Arbites standard'}
+  ],
+  utility:[
+    {name:'--',dmg:'',trait:'',notes:''},
+    {name:'Frag Grenade',dmg:'2d6',trait:'',notes:'3in radius'},
+    {name:'Krak Grenade',dmg:'3d6',trait:'',notes:'Single target'},
+    {name:'Smoke Grenade',dmg:'',trait:'',notes:'Blocks LOS 1 turn'},
+    {name:'Melta Bomb',dmg:'4d6',trait:'',notes:'vs structures'},
+    {name:'Auspex Scanner',dmg:'',trait:'',notes:'+2 PER see through walls'}
+  ]
+};
+
+var W_PRESETS={
+  'ADEPTUS ARBITES':{primary:'Shotgun',sidearm:'Autopistol',melee:'Shock Maul',utility:'Frag Grenade'},
+  'CADIANS':{primary:'Lasgun',sidearm:'Laspistol',melee:'Combat Knife',utility:'Frag Grenade'},
+  'DEATH KORPS OF KRIEG':{primary:'Lasgun',sidearm:'Laspistol',melee:'Combat Knife',utility:'Frag Grenade'},
+  'TEMPESTUS AQUILONS':{primary:'Hot-shot Lasgun',sidearm:'Hot-shot Laspistol',melee:'Combat Knife',utility:'Frag Grenade'},
+  'TALLARN DESERT RAIDERS':{primary:'Autogun',sidearm:'Autopistol',melee:'Combat Knife',utility:'Smoke Grenade'},
+  'KASKRIN':{primary:'Hot-shot Lasgun',sidearm:'Hot-shot Laspistol',melee:'Combat Knife',utility:'Krak Grenade'},
+  'ADEPTA SORORITAS':{primary:'Bolter',sidearm:'Bolt Pistol',melee:'Chainsword',utility:'Frag Grenade'},
+  'IMPERIAL NAVY BREACHERS':{primary:'Shotgun',sidearm:'Autopistol',melee:'Chainsword',utility:'Melta Bomb'},
+  'ORDO HERETICUS AGENT':{primary:'Bolter',sidearm:'Bolt Pistol',melee:'Power Sword',utility:'Frag Grenade'},
+  'ORDO XENOS AGENT':{primary:'Hot-shot Lasgun',sidearm:'Laspistol',melee:'Combat Knife',utility:'Auspex Scanner'},
+  'ORDO MALLEUS AGENT':{primary:'Bolter',sidearm:'Bolt Pistol',melee:'Force Sword',utility:'Frag Grenade'},
+  'MILITARUM AUXILIA -- RATLING':{primary:'Sniper Rifle',sidearm:'Autopistol',melee:'Combat Knife',utility:'Smoke Grenade'},
+  'MILITARUM AUXILIA -- OGRYN':{primary:'Heavy Bolter',sidearm:'--',melee:'Power Fist',utility:'--'},
+  'ULTRAMARINES':{primary:'Boltgun Storm',sidearm:'Bolt Pistol',melee:'Chainsword',utility:'Frag Grenade'},
+  'BLOOD ANGELS':{primary:'Boltgun Storm',sidearm:'Bolt Pistol',melee:'Chainsword',utility:'Frag Grenade'},
+  'DARK ANGELS':{primary:'Boltgun Storm',sidearm:'Bolt Pistol',melee:'Power Sword',utility:'Frag Grenade'},
+  'SPACE WOLVES':{primary:'Boltgun Storm',sidearm:'Bolt Pistol',melee:'Chainaxe',utility:'Frag Grenade'},
+  'IMPERIAL FISTS':{primary:'Bolter',sidearm:'Bolt Pistol',melee:'Power Fist',utility:'Krak Grenade'},
+  'SALAMANDERS':{primary:'Flamer',sidearm:'Bolt Pistol',melee:'Power Fist',utility:'Melta Bomb'},
+  'RAVEN GUARD':{primary:'Boltgun Storm',sidearm:'Bolt Pistol',melee:'Combat Knife',utility:'Smoke Grenade'},
+  'IRON HANDS':{primary:'Bolter',sidearm:'Bolt Pistol',melee:'Power Fist',utility:'Krak Grenade'},
+  'WHITE SCARS':{primary:'Boltgun Storm',sidearm:'Bolt Pistol',melee:'Chainsword',utility:'Frag Grenade'},
+  'BLACK TEMPLARS':{primary:'Boltgun Storm',sidearm:'Bolt Pistol',melee:'Chainsword',utility:'Frag Grenade'}
+};
+
+var FACTIONS={
+  'ADEPTUS ARBITES':{ac:15,ca:12,fth:13,tch:8,mht:12,per:10,agl:8,cap:3,classis:'MORTALIS',info:'AC 15 // +2 CA +3 FTH +2 MHT'},
+  'CADIANS':{ac:14,ca:12,fth:10,tch:10,mht:12,per:12,agl:10,cap:3,classis:'MORTALIS',info:'AC 14 // +2 CA +2 MHT +2 PER'},
+  'DEATH KORPS OF KRIEG':{ac:13,ca:11,fth:14,tch:8,mht:13,per:10,agl:8,cap:2,classis:'MORTALIS',info:'AC 13 // +1 CA +4 FTH +3 MHT'},
+  'TEMPESTUS AQUILONS':{ac:14,ca:12,fth:10,tch:8,mht:10,per:12,agl:10,cap:3,classis:'MORTALIS',info:'AC 14 // +2 CA +2 PER +2 AGL'},
+  'TALLARN DESERT RAIDERS':{ac:13,ca:10,fth:10,tch:8,mht:10,per:14,agl:14,cap:3,classis:'MORTALIS',info:'AC 13 // +4 PER +6 AGL'},
+  'KASKRIN':{ac:15,ca:12,fth:12,tch:10,mht:12,per:12,agl:10,cap:3,classis:'MORTALIS',info:'AC 15 // +2 CA +2 FTH +2 MHT +2 PER'},
+  'ADEPTA SORORITAS':{ac:15,ca:12,fth:16,tch:8,mht:12,per:12,agl:10,cap:3,classis:'MORTALIS',info:'AC 15 // +6 FTH ZEALOT at creation'},
+  'IMPERIAL NAVY BREACHERS':{ac:14,ca:10,fth:10,tch:10,mht:12,per:10,agl:10,cap:3,classis:'MORTALIS',info:'AC 14 // +2 TCH +2 MHT +2 AGL'},
+  'ORDO HERETICUS AGENT':{ac:13,ca:14,fth:14,tch:10,mht:10,per:12,agl:10,cap:3,classis:'MORTALIS',info:'AC 13 // +4 CA +4 FTH +2 PER'},
+  'ORDO XENOS AGENT':{ac:13,ca:12,fth:10,tch:14,mht:10,per:14,agl:10,cap:3,classis:'MORTALIS',info:'AC 13 // +6 TCH +4 PER'},
+  'ORDO MALLEUS AGENT':{ac:13,ca:12,fth:16,tch:10,mht:12,per:12,agl:8,cap:3,classis:'MORTALIS',info:'AC 13 // +6 FTH +2 MHT +2 PER'},
+  'MILITARUM AUXILIA -- RATLING':{ac:11,ca:8,fth:10,tch:10,mht:8,per:16,agl:14,cap:2,classis:'MORTALIS',info:'AC 11 // +6 PER +6 AGL'},
+  'MILITARUM AUXILIA -- OGRYN':{ac:14,ca:8,fth:10,tch:6,mht:18,per:8,agl:6,cap:1,classis:'MORTALIS',info:'AC 14 // +8 MHT BLESSED at creation'},
+  'ULTRAMARINES':{ac:18,ca:16,fth:14,tch:14,mht:18,per:16,agl:14,cap:2,classis:'ASCENSIONE',info:'AC 18 // Codex doctrine'},
+  'BLOOD ANGELS':{ac:18,ca:14,fth:16,tch:12,mht:18,per:14,agl:18,cap:2,classis:'ASCENSIONE',info:'AC 18 // Assault specialists'},
+  'DARK ANGELS':{ac:18,ca:16,fth:18,tch:14,mht:16,per:16,agl:12,cap:2,classis:'ASCENSIONE',info:'AC 18 // Secretive faith-driven'},
+  'SPACE WOLVES':{ac:18,ca:14,fth:16,tch:10,mht:19,per:16,agl:12,cap:2,classis:'ASCENSIONE',info:'AC 18 // MHT capped at 19'},
+  'IMPERIAL FISTS':{ac:18,ca:16,fth:16,tch:16,mht:18,per:14,agl:12,cap:2,classis:'ASCENSIONE',info:'AC 18 // Siege masters'},
+  'SALAMANDERS':{ac:18,ca:14,fth:18,tch:18,mht:16,per:14,agl:12,cap:2,classis:'ASCENSIONE',info:'AC 18 // Artificers and flame'},
+  'RAVEN GUARD':{ac:18,ca:14,fth:14,tch:14,mht:14,per:18,agl:19,cap:2,classis:'ASCENSIONE',info:'AC 18 // AGL capped at 19'},
+  'IRON HANDS':{ac:18,ca:14,fth:12,tch:19,mht:18,per:16,agl:12,cap:2,classis:'ASCENSIONE',info:'AC 18 // TCH capped at 19'},
+  'WHITE SCARS':{ac:18,ca:14,fth:14,tch:12,mht:16,per:16,agl:19,cap:2,classis:'ASCENSIONE',info:'AC 18 // AGL capped at 19'},
+  'BLACK TEMPLARS':{ac:18,ca:16,fth:19,tch:10,mht:18,per:14,agl:14,cap:2,classis:'ASCENSIONE',info:'AC 18 // FTH capped at 19'}
+};
+
+var TIERS={
+  CA:[{max:2,t:'COWARD'},{max:5,t:'PASSIVE'},{max:8,t:'STEADY'},{max:11,t:'INSPIRING'},{max:14,t:'SERGEANT'},{max:18,t:'PRAEFECTUS'},{max:20,t:'COMMISSAR'}],
+  FTH:[{max:2,t:'BROKEN'},{max:5,t:'HERETIC'},{max:8,t:'DERELICT'},{max:11,t:'STEADFAST'},{max:14,t:'ZEALOT'},{max:18,t:'FANATIC'},{max:20,t:'SAINT'}],
+  TCH:[{max:2,t:'INEPT'},{max:5,t:'INITIATE'},{max:8,t:'LEXMECH'},{max:11,t:'CALC-LOGI'},{max:14,t:'ENGINSEER'},{max:18,t:'TECH ADEPT'},{max:20,t:'MAGOS'}],
+  MHT:[{max:2,t:'DEADMAN'},{max:5,t:'WEAK'},{max:8,t:'LIABILITY'},{max:11,t:'HARDY'},{max:14,t:'VETERAN'},{max:18,t:'BLESSED'},{max:20,t:'NAMED'}],
+  PER:[{max:2,t:'BLIND'},{max:5,t:'OBLIVIOUS'},{max:8,t:'AWARE'},{max:11,t:'SHARP'},{max:14,t:'TACTICAL'},{max:18,t:'AUGMENTED'},{max:20,t:'PSKER'}],
+  AGL:[{max:2,t:'HEAVY'},{max:5,t:'BALANCED'},{max:8,t:'SWIFT'},{max:11,t:'PROSTHETIC'},{max:14,t:'VOX FLASH'},{max:18,t:'WHITE SCAR'},{max:20,t:'CALLEDUS'}]
+};
+
+function getTier(k,s){var t=TIERS[k];if(!t)return'';for(var i=0;i<t.length;i++){if(s<=t[i].max)return t[i].t;}return'';}
+function traitMod(s){return Math.floor((s-10)/2);}
+function modStr(s){var m=traitMod(s);return(m>=0?'+':'')+m;}
+function tCls(s){return s>=15?'t-hi':s>=9?'t-mi':s<=5?'t-lo':'t-ba';}
+
+function wLookup(name){
+  var all=WEAPONS.ranged.concat(WEAPONS.melee).concat(WEAPONS.utility);
+  return all.find(function(w){return w.name===name;})||{name:name||'',dmg:'',trait:'',notes:''};
+}
+
+function populateWeaponSelects(prefix,preset){
+  var cats={primary:WEAPONS.ranged,sidearm:WEAPONS.ranged,melee:WEAPONS.melee,utility:WEAPONS.utility};
+  Object.keys(cats).forEach(function(cat){
+    var sel=document.getElementById(prefix+'-w-'+cat);
+    if(!sel)return;
+    sel.innerHTML=cats[cat].map(function(w){return'<option value="'+w.name+'">'+w.name+(w.dmg?' ['+w.dmg+']':'')+'</option>';}).join('');
+    if(preset&&preset[cat])sel.value=preset[cat];
+  });
+}
+
+function populateTMWeaponSelects(prefix,preset){
+  var cats={primary:WEAPONS.ranged,melee:WEAPONS.melee};
+  Object.keys(cats).forEach(function(cat){
+    var sel=document.getElementById(prefix+'-w-'+cat);
+    if(!sel)return;
+    sel.innerHTML=cats[cat].map(function(w){return'<option value="'+w.name+'">'+w.name+(w.dmg?' ['+w.dmg+']':'')+'</option>';}).join('');
+    if(preset&&preset[cat])sel.value=preset[cat];
+  });
+}
+
+var nextId=100;
+var state={operatives:[],camp:[],missions:[],library:[]};
+var IS_PLAYER=new URLSearchParams(window.location.search).get('view')==='player';
+
+function save(){localStorage.setItem('bl2_state',JSON.stringify(state));localStorage.setItem('bl2_nextid',String(nextId));}
+function load(){
+  var s=localStorage.getItem('bl2_state');
+  if(s){try{state=JSON.parse(s);}catch(e){state={operatives:[],camp:[],missions:[]};}}
+  var n=localStorage.getItem('bl2_nextid');
+  if(n)nextId=parseInt(n);
+  if(!Array.isArray(state.operatives))state.operatives=[];
+  if(!Array.isArray(state.camp))state.camp=[];
+  if(!Array.isArray(state.missions))state.missions=[];
+  if(!Array.isArray(state.library))state.library=[];
+}
+
+function openModal(n){document.getElementById('modal-'+n).classList.add('open');}
+function closeModal(n){document.getElementById('modal-'+n).classList.remove('open');}
+function setEF(v){document.getElementById('edit-faction').value=v;}
+
+function pickFaction(name){document.getElementById('op-faction').value=name;applyFaction();}
+function onFactionInput(){applyFaction();}
+function applyFaction(){
+  var f=document.getElementById('op-faction').value.toUpperCase().trim();
+  var d=FACTIONS[f];
+  var h=document.getElementById('faction-hint');
+  var pn=document.getElementById('op-weapon-preset-note');
+  if(!d){if(h)h.textContent=f?'CUSTOM FACTION -- SET TRAITS MANUALLY':'';return;}
+  document.getElementById('op-ac').value=d.ac;
+  document.getElementById('op-cap').value=d.cap;
+  document.getElementById('op-ca').value=d.ca;
+  document.getElementById('op-fth').value=d.fth;
+  document.getElementById('op-tch').value=d.tch;
+  document.getElementById('op-mht').value=d.mht;
+  document.getElementById('op-per').value=d.per;
+  document.getElementById('op-agl').value=d.agl;
+  document.getElementById('op-classis').value=d.classis;
+  document.getElementById('op-hp').value=d.mht>=15?20:d.mht>=9?12:8;
+  if(h)h.textContent=d.info;
+  var preset=W_PRESETS[f];
+  if(preset){populateWeaponSelects('op',preset);if(pn)pn.textContent='FACTION PRESET APPLIED';}
+  ['ca','fth','tch','mht','per','agl'].forEach(function(t){updateTierHint(t,t.toUpperCase());});
+}
+
+function updateTierHint(id,key){
+  var v=parseInt(document.getElementById('op-'+id).value)||10;
+  var el=document.getElementById('hint-'+id);
+  if(el)el.textContent=getTier(key,v)+' // '+modStr(v);
+}
+
+function populateLeaderSelects(){
+  ['tm-leader','etm-leader'].forEach(function(sid){
+    var sel=document.getElementById(sid);if(!sel)return;
+    var cur=sel.value;
+    sel.innerHTML='<option value="">-- UNASSIGNED --</option>';
+    state.operatives.forEach(function(op){var opt=document.createElement('option');opt.value=op.callsign;opt.textContent=op.callsign;sel.appendChild(opt);});
+    sel.value=cur;
+  });
+}
+
+function addOperative(){
+  var cs=document.getElementById('op-callsign').value.toUpperCase().trim();
+  if(!cs){alert('Callsign required.');return;}
+  var hp=parseInt(document.getElementById('op-hp').value)||12;
+  var cap=parseInt(document.getElementById('op-cap').value)||3;
+  var op={
+    id:nextId++,
+    callsign:cs,
+    player:document.getElementById('op-player').value.trim(),
+    faction:document.getElementById('op-faction').value.toUpperCase().trim(),
+    classis:document.getElementById('op-classis').value,
+    status:'active',
+    ac:parseInt(document.getElementById('op-ac').value)||15,
+    hp:{max:hp,current:hp},
+    cap:{max:cap,current:cap},
+    cc:0,
+    traits:{
+      CA:parseInt(document.getElementById('op-ca').value)||10,
+      FTH:parseInt(document.getElementById('op-fth').value)||10,
+      TCH:parseInt(document.getElementById('op-tch').value)||8,
+      MHT:parseInt(document.getElementById('op-mht').value)||10,
+      PER:parseInt(document.getElementById('op-per').value)||10,
+      AGL:parseInt(document.getElementById('op-agl').value)||8
+    },
+    weapons:{
+      primary:document.getElementById('op-w-primary').value,
+      sidearm:document.getElementById('op-w-sidearm').value,
+      melee:document.getElementById('op-w-melee').value,
+      utility:document.getElementById('op-w-utility').value
+    },
+    tms:[
+      document.getElementById('op-tm1').value.toUpperCase().trim()||null,
+      document.getElementById('op-tm2').value.toUpperCase().trim()||null,
+      document.getElementById('op-tm3').value.toUpperCase().trim()||null
+    ],
+    inventory:[]
+  };
+  state.operatives.push(op);
+  save();render();closeModal('add-op');
+  ['op-callsign','op-player','op-tm1','op-tm2','op-tm3'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('op-faction').value='';
+  document.getElementById('faction-hint').textContent='';
+  document.getElementById('op-weapon-preset-note').textContent='';
+}
+
+function openEditOp(id){
+  var op=state.operatives.find(function(o){return o.id===id;});if(!op)return;
+  document.getElementById('edit-op-id').value=id;
+  document.getElementById('edit-callsign').value=op.callsign;
+  document.getElementById('edit-player').value=op.player||'';
+  document.getElementById('edit-faction').value=op.faction;
+  document.getElementById('edit-classis').value=op.classis||'MORTALIS';
+  document.getElementById('edit-hp-cur').value=op.hp.current;
+  document.getElementById('edit-hp-max').value=op.hp.max;
+  document.getElementById('edit-ac').value=op.ac;
+  document.getElementById('edit-cap-cur').value=op.cap.current;
+  document.getElementById('edit-cap-max').value=op.cap.max;
+  document.getElementById('edit-cc').value=op.cc;
+  document.getElementById('edit-ca').value=op.traits.CA;
+  document.getElementById('edit-fth').value=op.traits.FTH;
+  document.getElementById('edit-tch').value=op.traits.TCH;
+  document.getElementById('edit-mht').value=op.traits.MHT;
+  document.getElementById('edit-per').value=op.traits.PER;
+  document.getElementById('edit-agl').value=op.traits.AGL;
+  document.getElementById('edit-status').value=op.status;
+  document.getElementById('edit-tm1').value=op.tms[0]||'';
+  document.getElementById('edit-tm2').value=op.tms[1]||'';
+  document.getElementById('edit-tm3').value=op.tms[2]||'';
+  populateWeaponSelects('edit',op.weapons||{primary:'Lasgun',sidearm:'Laspistol',melee:'Combat Knife',utility:'Frag Grenade'});
+  renderEditInvSlots(op);
+  openModal('edit-op');
+}
+
+function saveOperative(){
+  var id=parseInt(document.getElementById('edit-op-id').value);
+  var op=state.operatives.find(function(o){return o.id===id;});if(!op)return;
+  op.callsign=document.getElementById('edit-callsign').value.toUpperCase().trim();
+  op.player=document.getElementById('edit-player').value.trim();
+  op.faction=document.getElementById('edit-faction').value.toUpperCase().trim();
+  op.classis=document.getElementById('edit-classis').value;
+  op.hp.current=Math.max(0,parseInt(document.getElementById('edit-hp-cur').value)||0);
+  op.hp.max=parseInt(document.getElementById('edit-hp-max').value)||12;
+  op.ac=parseInt(document.getElementById('edit-ac').value)||15;
+  op.cap.current=Math.max(0,parseInt(document.getElementById('edit-cap-cur').value)||0);
+  op.cap.max=parseInt(document.getElementById('edit-cap-max').value)||3;
+  op.cc=Math.max(0,Math.min(20,parseInt(document.getElementById('edit-cc').value)||0));
+  op.traits.CA=parseInt(document.getElementById('edit-ca').value)||10;
+  op.traits.FTH=parseInt(document.getElementById('edit-fth').value)||10;
+  op.traits.TCH=parseInt(document.getElementById('edit-tch').value)||8;
+  op.traits.MHT=parseInt(document.getElementById('edit-mht').value)||10;
+  op.traits.PER=parseInt(document.getElementById('edit-per').value)||10;
+  op.traits.AGL=parseInt(document.getElementById('edit-agl').value)||8;
+  op.status=document.getElementById('edit-status').value;
+  op.weapons={
+    primary:document.getElementById('edit-w-primary').value,
+    sidearm:document.getElementById('edit-w-sidearm').value,
+    melee:document.getElementById('edit-w-melee').value,
+    utility:document.getElementById('edit-w-utility').value
+  };
+  op.tms=[
+    document.getElementById('edit-tm1').value.toUpperCase().trim()||null,
+    document.getElementById('edit-tm2').value.toUpperCase().trim()||null,
+    document.getElementById('edit-tm3').value.toUpperCase().trim()||null
+  ];
+  op.inventory=getEditInv();
+  if(op.hp.current===0)op.status='gravely';
+  save();render();closeModal('edit-op');
+}
+
+function deleteOperative(){
+  var id=parseInt(document.getElementById('edit-op-id').value);
+  if(!confirm('Purge operative from records?'))return;
+  state.operatives=state.operatives.filter(function(o){return o.id!==id;});
+  save();render();closeModal('edit-op');
+}
+
+function forceDeleteOp(id){
+  state.operatives=state.operatives.filter(function(o){return o.id!==id;});
+  save();renderOps();
+}
+
+function addTM(){
+  var name=document.getElementById('tm-name').value.toUpperCase().trim();
+  if(!name){alert('Designation required.');return;}
+  var hp=parseInt(document.getElementById('tm-hp').value)||6;
+  state.camp.push({
+    name:name,
+    faction:document.getElementById('tm-faction').value.toUpperCase().trim()||'UNKNOWN',
+    grade:document.getElementById('tm-grade').value,
+    leader:document.getElementById('tm-leader').value,
+    missions:parseInt(document.getElementById('tm-missions').value)||0,
+    status:document.getElementById('tm-status').value,
+    hp:{max:hp,current:hp},
+    weapons:{primary:document.getElementById('tm-w-primary').value,melee:document.getElementById('tm-w-melee').value},
+    shaken:document.getElementById('tm-shaken').checked,
+    recovery:parseInt(document.getElementById('tm-recovery').value)||0,
+    ability:document.getElementById('tm-ability').value.trim(),
+    notes:document.getElementById('tm-notes').value.trim()
+  });
+  save();renderCamp();closeModal('add-tm');
+  ['tm-name','tm-faction','tm-ability','tm-notes'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('tm-shaken').checked=false;
+  document.getElementById('tm-hp').value=6;
+  document.getElementById('tm-recovery').value=0;
+}
+
+function openEditTM(i){
+  var tm=state.camp[i];if(!tm)return;
+  populateLeaderSelects();
+  populateTMWeaponSelects('etm',tm.weapons||{primary:'Lasgun',melee:'Combat Knife'});
+  document.getElementById('etm-idx').value=i;
+  document.getElementById('etm-name').value=tm.name;
+  document.getElementById('etm-faction').value=tm.faction;
+  document.getElementById('etm-grade').value=tm.grade;
+  document.getElementById('etm-leader').value=tm.leader||'';
+  document.getElementById('etm-status').value=tm.status;
+  document.getElementById('etm-hp').value=tm.hp?tm.hp.max:6;
+  document.getElementById('etm-missions').value=tm.missions;
+  document.getElementById('etm-shaken').checked=tm.shaken||false;
+  document.getElementById('etm-recovery').value=tm.recovery||0;
+  document.getElementById('etm-ability').value=tm.ability||'';
+  document.getElementById('etm-notes').value=tm.notes||'';
+  openModal('edit-tm');
+}
+
+function saveTM(){
+  var i=parseInt(document.getElementById('etm-idx').value);
+  var tm=state.camp[i];if(!tm)return;
+  tm.name=document.getElementById('etm-name').value.toUpperCase().trim();
+  tm.faction=document.getElementById('etm-faction').value.toUpperCase().trim();
+  tm.grade=document.getElementById('etm-grade').value;
+  tm.leader=document.getElementById('etm-leader').value;
+  tm.status=document.getElementById('etm-status').value;
+  var hp=parseInt(document.getElementById('etm-hp').value)||6;
+  if(!tm.hp)tm.hp={max:hp,current:hp};
+  tm.hp.max=hp;
+  if(tm.hp.current>hp)tm.hp.current=hp;
+  tm.weapons={primary:document.getElementById('etm-w-primary').value,melee:document.getElementById('etm-w-melee').value};
+  tm.missions=parseInt(document.getElementById('etm-missions').value)||0;
+  tm.shaken=document.getElementById('etm-shaken').checked;
+  tm.recovery=parseInt(document.getElementById('etm-recovery').value)||0;
+  tm.ability=document.getElementById('etm-ability').value.trim();
+  tm.notes=document.getElementById('etm-notes').value.trim();
+  save();renderCamp();closeModal('edit-tm');
+}
+
+function deleteTM(){
+  var i=parseInt(document.getElementById('etm-idx').value);
+  if(!confirm('Remove this team member?'))return;
+  state.camp.splice(i,1);save();renderCamp();closeModal('edit-tm');
+}
+
+function addMission(){
+  var title=document.getElementById('mis-title').value.toUpperCase().trim();
+  if(!title){alert('Mission title required.');return;}
+  state.missions.unshift({
+    title:title,
+    result:document.getElementById('mis-result').value,
+    casualties:parseInt(document.getElementById('mis-cas').value)||0,
+    date:document.getElementById('mis-date').value||'999.M41',
+    primaryMet:document.getElementById('mis-primary').checked,
+    secondaryMet:document.getElementById('mis-secondary').checked,
+    capSpent:parseInt(document.getElementById('mis-cap').value)||0,
+    intel:document.getElementById('mis-intel').value.trim()
+  });
+  save();renderMissions();closeModal('add-mission');
+  document.getElementById('mis-title').value='';
+  document.getElementById('mis-intel').value='';
+  document.getElementById('mis-primary').checked=false;
+  document.getElementById('mis-secondary').checked=false;
+  document.getElementById('mis-cap').value=0;
+}
+
+function deleteMission(i){
+  if(!confirm('Purge this mission?'))return;
+  state.missions.splice(i,1);save();renderMissions();
+}
+
+function adjustCAP(id,d){var op=state.operatives.find(function(o){return o.id===id;});if(!op)return;op.cap.current=Math.max(0,Math.min(op.cap.max,op.cap.current+d));save();renderOps();}
+function resetCAP(id){var op=state.operatives.find(function(o){return o.id===id;});if(!op)return;op.cap.current=op.cap.max;save();renderOps();}
+function resetAllCAP(){state.operatives.forEach(function(op){op.cap.current=op.cap.max;});save();renderOps();}
+function adjustCC(id,d){var op=state.operatives.find(function(o){return o.id===id;});if(!op)return;op.cc=Math.max(0,Math.min(20,op.cc+d));save();renderOps();}
+function setStatus(id,s){var op=state.operatives.find(function(o){return o.id===id;});if(!op)return;op.status=(op.status===s)?'active':s;save();renderOps();}
+function confirmReset(){if(!confirm('Reset all HP and CAP to max?'))return;state.operatives.forEach(function(op){op.hp.current=op.hp.max;op.cap.current=op.cap.max;});save();render();}
+
+function togglePip(id,i){
+  var op=state.operatives.find(function(o){return o.id===id;});if(!op)return;
+  op.hp.current=(i<op.hp.current)?i:i+1;
+  op.hp.current=Math.max(0,Math.min(op.hp.max,op.hp.current));
+  if(op.hp.current===0)op.status='gravely';
+  else if(op.status==='gravely'&&op.hp.current>0)op.status='active';
+  save();renderOps();
+}
+
+function renderWeapons(wep){
+  try{
+    if(!wep)return'';
+    var slots=[{key:'primary'},{key:'sidearm'},{key:'melee'},{key:'utility'}];
+    var rows=slots.map(function(s){
+      var name=wep[s.key]||'';
+      if(!name||name==='--')return'';
+      var w=wLookup(name);
+      return'<div class="wrow"><span class="wname">'+name+'</span><div class="wstats">'+(w.dmg?'<span class="wdmg">'+w.dmg+'</span>':'')+(w.trait?'<span class="wtrait">'+w.trait+'</span>':'')+(w.notes?'<span class="wnotes">'+w.notes+'</span>':'')+'</div></div>';
+    }).filter(Boolean).join('');
+    if(!rows)return'';
+    return'<div class="weapons"><div class="weapons-label">ARMAMENTA</div>'+rows+'</div>';
+  }catch(e){return'';}
+}
+
+function renderOps(){
+  var g=document.getElementById('op-grid');
+  if(state.operatives.length===0){g.innerHTML='<div class="op-empty">NO OPERATIVES REQUISITIONED -- USE + OPERATIVE</div>';return;}
+  g.innerHTML=state.operatives.map(function(op){
+    try{
+      var hpP=Math.round((op.hp.current/op.hp.max)*100);
+      var capP=Math.round((op.cap.current/op.cap.max)*100);
+      var ccP=Math.round((op.cc/20)*100);
+      var cc=op.status==='gravely'?' ocard-gravely':op.status==='kia'?' ocard-kia':'';
+      var traits=Object.keys(op.traits).map(function(k){var v=op.traits[k];return'<div class="trait '+tCls(v)+'"><div class="tname">'+k+'</div><div class="tval">'+v+'</div><div class="tmod">'+modStr(v)+'</div></div>';}).join('');
+      var pips='';for(var i=0;i<op.hp.max;i++){pips+='<div class="pip '+(i<op.hp.current?'pip-ok':'pip-lost')+'" onclick="togglePip('+op.id+','+i+')"></div>';}
+      var tms=op.tms.map(function(tm,i){var c=tm?'tm-slot tm-f':(i<op.cap.max?'tm-slot':'tm-slot tm-lk');return'<div class="'+c+'">'+(tm||(i<op.cap.max?'VACANT':'--'))+'</div>';}).join('');
+      var eb=IS_PLAYER?'':'<button class="btn" onclick="openEditOp('+op.id+')" style="font-size:8px;padding:2px 5px;">EDIT</button>';
+      var ft=IS_PLAYER?'':'<div class="ocard-foot"><div style="display:flex;gap:5px;flex-wrap:wrap;"><button class="btn btn-r" onclick="setStatus('+op.id+',\'gravely\')">'+(op.status==='gravely'?'STABILIZE':'GRAVELY')+'</button><button class="btn btn-r" onclick="setStatus('+op.id+',\'kia\')">'+(op.status==='kia'?'REVIVE':'KIA')+'</button></div><button class="btn" onclick="resetCAP('+op.id+')">RESET CAP</button></div>';
+      var playerLine=op.player?'<div class="ocard-sub" style="color:#555;">'+op.player+'</div>':'';
+      return'<div class="ocard'+cc+'">'+
+        '<div class="ocard-head"><div><div class="ocard-callsign">'+op.callsign+'</div><div class="ocard-sub">'+op.faction+' // '+op.classis+'</div>'+playerLine+'</div>'+
+        '<div class="ocard-hr"><div class="ac-tag">AC '+op.ac+'</div>'+eb+'</div></div>'+
+        '<div class="ocard-body">'+
+        '<div class="brow"><div class="blbl"><span>VITALIS</span><span>'+op.hp.current+' / '+op.hp.max+'</span></div><div class="btrack"><div class="bfill-hp" style="width:'+hpP+'%"></div></div><div class="pips">'+pips+'</div></div>'+
+        '<div class="bgrid">'+
+        '<div class="brow"><div class="blbl"><span>CAP</span><div class="ctr"><button class="cbtn" onclick="adjustCAP('+op.id+',-1)">-</button><span class="cval">'+op.cap.current+'</span><button class="cbtn" onclick="adjustCAP('+op.id+',1)">+</button></div></div><div class="btrack"><div class="bfill-cap" style="width:'+capP+'%"></div></div></div>'+
+        '<div class="brow"><div class="blbl"><span>CORRUPTIO</span><div class="ctr"><button class="cbtn" onclick="adjustCC('+op.id+',-1)">-</button><span class="cval">'+op.cc+'</span><button class="cbtn" onclick="adjustCC('+op.id+',1)">+</button></div></div><div class="btrack"><div class="bfill-cc" style="width:'+ccP+'%"></div></div></div>'+
+        '</div>'+
+        '<div class="traits">'+traits+'</div>'+
+        renderWeapons(op.weapons)+
+        renderInventory(op.inventory)+
+        '<div class="tm-row">'+tms+'</div>'+
+        '</div>'+ft+'</div>';
+    }catch(e){
+      return'<div class="ocard ocard-gravely"><div class="ocard-head"><div><div class="ocard-callsign">'+(op.callsign||'UNKNOWN')+'</div><div class="ocard-sub">RENDER ERROR -- '+e.message+'</div></div></div><div class="ocard-body"></div><div class="ocard-foot"><button class="btn btn-r" onclick="forceDeleteOp('+op.id+')">DELETE THIS CARD</button></div></div>';
+    }
+  }).join('');
+}
+
+function renderCamp(){
+  var l=document.getElementById('camp-list');
+  if(state.camp.length===0){l.innerHTML='<div style="font-size:10px;color:#2a2a28;padding:0.5rem 0;letter-spacing:0.08em;">NO TEAM MEMBERS LOGGED</div>';return;}
+  l.innerHTML=state.camp.map(function(tm,i){
+    var dc=tm.status==='active'?'cdot-a':tm.status==='kia'?'cdot-k':'cdot-c';
+    var kia=tm.status==='kia'?'opacity:0.35;':'';
+    var g2=tm.grade==='II'?'cg2':'';
+    var eb=IS_PLAYER?'':'<button class="btn" onclick="openEditTM('+i+')" style="font-size:7px;padding:1px 4px;">EDIT</button>';
+    var gt=tm.grade==='II'?'<span style="font-size:7px;color:#a07820;margin-left:3px;">[II]</span>':'';
+    var shakenTag=tm.shaken?'<span style="font-size:7px;color:#7a3a3a;margin-left:4px;border:0.5px solid #7a3a3a;padding:0 3px;border-radius:1px;">SHAKEN</span>':'';
+    var recTag=(tm.shaken&&tm.recovery>0)?'<span style="font-size:7px;color:#555;margin-left:3px;">'+tm.recovery+'M REC</span>':'';
+    var leaderStr=tm.leader?'<span style="font-size:8px;color:#555;margin-left:4px;">to '+tm.leader+'</span>':'';
+    var hpStr=tm.hp?' // '+tm.hp.current+'/'+tm.hp.max+'HP':'';
+    var wStr=(tm.weapons&&tm.weapons.primary&&tm.weapons.primary!=='--')?'<div class="crow-note">'+tm.weapons.primary+(tm.weapons.melee&&tm.weapons.melee!=='--'?' // '+tm.weapons.melee:'')+'</div>':'';
+    var ability=tm.ability?'<div class="crow-note" style="color:#a07820;">'+tm.ability+'</div>':'';
+    var note=tm.notes?'<div class="crow-note">'+tm.notes+'</div>':'';
+    return'<div class="crow '+g2+'" style="'+kia+'">'+
+      '<div class="crow-left"><div><span class="cdot '+dc+'"></span>'+tm.name+gt+shakenTag+recTag+leaderStr+'</div>'+wStr+ability+note+'</div>'+
+      '<div class="crow-right"><span class="cf">'+tm.faction+'</span><span class="cm">'+tm.missions+'M'+hpStr+'</span>'+eb+'</div>'+
+      '</div>';
+  }).join('');
+}
+
+function renderMissions(){
+  var l=document.getElementById('mission-list');
+  if(state.missions.length===0){l.innerHTML='<div style="font-size:10px;color:#2a2a28;padding:0.5rem 0;letter-spacing:0.08em;">NO MISSIONS LOGGED</div>';return;}
+  l.innerHTML=state.missions.map(function(m,i){
+    var rc=m.result==='success'?'rs':m.result==='partial'?'rp':'rf';
+    var db=IS_PLAYER?'':'<button class="btn btn-r" onclick="deleteMission('+i+')" style="font-size:7px;padding:1px 4px;flex-shrink:0;">DEL</button>';
+    var priTag=m.primaryMet?'<span style="font-size:8px;color:#3a6e3e;border:0.5px solid #3a6e3e;padding:0 3px;border-radius:1px;">PRI OK</span>':'<span style="font-size:8px;color:#555;border:0.5px solid #2a2a28;padding:0 3px;border-radius:1px;">PRI --</span>';
+    var secTag=m.secondaryMet?'<span style="font-size:8px;color:#3a6e3e;border:0.5px solid #3a6e3e;padding:0 3px;border-radius:1px;">SEC OK</span>':'<span style="font-size:8px;color:#555;border:0.5px solid #2a2a28;padding:0 3px;border-radius:1px;">SEC --</span>';
+    var capStr=m.capSpent?'<span>CAP: '+m.capSpent+'</span>':'';
+    var intelStr=m.intel?'<div style="font-size:8px;color:#a07820;margin-top:2px;">INTEL: '+m.intel+'</div>':'';
+    return'<div class="mrow"><div class="mhead"><div class="mtitle">'+m.title+'</div>'+db+'</div>'+
+      '<div class="mmeta"><span class="'+rc+'">'+m.result.toUpperCase()+'</span>'+priTag+secTag+'<span>CAS: '+m.casualties+'</span>'+capStr+'<span>'+m.date+'</span></div>'+
+      intelStr+'</div>';
+  }).join('');
+}
+
+
+function delLib(btn){
+  var id=btn.getAttribute('data-lid');
+  if(!confirm('Remove this item?'))return;
+  state.library=state.library.filter(function(i){return i.id!==id;});
+  state.operatives.forEach(function(op){if(Array.isArray(op.inventory))op.inventory=op.inventory.filter(function(x){return x!==id;});});
+  save();render();
+}
+
+function editLib(btn){
+  var id=btn.getAttribute('data-lid');
+  var item=state.library.find(function(i){return i.id===id;});
+  if(!item)return;
+  document.getElementById('elib-id').value=id;
+  document.getElementById('elib-name').value=item.name;
+  document.getElementById('elib-type').value=item.type;
+  document.getElementById('elib-effect').value=item.effect||'';
+  document.getElementById('elib-mod').value=item.modifier||'';
+  document.getElementById('elib-consumable').checked=item.consumable||false;
+  openModal('edit-library');
+}
+
+function saveLibItem(){
+  var id=document.getElementById('elib-id').value;
+  var item=state.library.find(function(i){return i.id===id;});
+  if(!item)return;
+  item.name=document.getElementById('elib-name').value.toUpperCase().trim();
+  item.type=document.getElementById('elib-type').value;
+  item.effect=document.getElementById('elib-effect').value.trim();
+  item.modifier=document.getElementById('elib-mod').value.trim();
+  item.consumable=document.getElementById('elib-consumable').checked;
+  save();render();closeModal('edit-library');
+}
+
+function addLibraryItem(){
+  var name=document.getElementById('lib-name').value.toUpperCase().trim();
+  if(!name){alert('Item name required.');return;}
+  state.library.push({
+    id:'itm_'+Date.now(),
+    name:name,
+    type:document.getElementById('lib-type').value,
+    effect:document.getElementById('lib-effect').value.trim(),
+    modifier:document.getElementById('lib-mod').value.trim(),
+    consumable:document.getElementById('lib-consumable').checked
+  });
+  save();renderLibrary();closeModal('library');
+  document.getElementById('lib-name').value='';
+  document.getElementById('lib-effect').value='';
+  document.getElementById('lib-mod').value='';
+  document.getElementById('lib-consumable').checked=false;
+}
+
+function renderLibrary(){
+  var l=document.getElementById('library-list');
+  if(!l)return;
+  if(state.library.length===0){l.innerHTML='<div style="font-size:10px;color:#2a2a28;padding:0.5rem 0;">NO ITEMS IN LIBRARY</div>';return;}
+  var tc={'Relic I':'#3a6e3e','Relic II':'#a07820','Relic III':'#7a3a7a','Equipment':'#3a5a7a','Consumable':'#555','Special Weapon':'#7a4a2a','Weapon Attachment':'#4a6a7a','Misc':'#3a3a3a'};
+  l.innerHTML=state.library.map(function(item,i){
+    var c=tc[item.type]||'#555';
+    var eq=state.operatives.filter(function(op){return Array.isArray(op.inventory)&&op.inventory.indexOf(item.id)!==-1;}).map(function(op){return op.callsign;});
+    var db=IS_PLAYER?'':'<button class="btn" data-lid="'+item.id+'" onclick="editLib(this)" style="font-size:7px;padding:1px 4px;">EDIT</button> <button class="btn btn-r" data-lid="'+item.id+'" onclick="delLib(this)" style="font-size:7px;padding:1px 4px;">DEL</button>'
+    return'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:5px 0;border-bottom:0.5px solid #161614;">'+
+      '<div>'+
+        '<div style="font-size:11px;color:#c8c4b0;">'+item.name+'<span style="font-size:7px;padding:1px 4px;border:0.5px solid '+c+';color:'+c+';border-radius:1px;margin-left:5px;">'+item.type+'</span>'+(item.consumable?'<span style="font-size:7px;color:#555;margin-left:3px;">(1x)</span>':'')+'</div>'+
+        (item.effect?'<div style="font-size:9px;color:#555;margin-top:2px;">'+item.effect+'</div>':'')+
+        (item.modifier?'<div style="font-size:9px;color:#a07820;">'+item.modifier+'</div>':'')+
+        (eq.length?'<div style="font-size:8px;color:#3a6e3e;margin-top:2px;">EQUIPPED: '+eq.join(', ')+'</div>':'')+
+      '</div>'+
+      db+
+    '</div>';
+  }).join('');
+}
+
+function renderInventory(inventory){
+  if(!inventory||!inventory.filter(Boolean).length)return'';
+  var tc={'Relic I':'#3a6e3e','Relic II':'#a07820','Relic III':'#7a3a7a','Equipment':'#3a5a7a','Consumable':'#555','Special Weapon':'#7a4a2a','Weapon Attachment':'#4a6a7a','Misc':'#3a3a3a'};
+  var rows=inventory.filter(Boolean).map(function(id){
+    var item=state.library.find(function(i){return i.id===id;});
+    if(!item)return'';
+    var c=tc[item.type]||'#555';
+    return'<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 6px;background:#0d0d0b;border-left:2px solid '+c+';border-radius:2px;margin-bottom:2px;">'+
+      '<span style="font-size:9px;color:#a09080;">'+item.name+'</span>'+
+      (item.modifier?'<span style="font-size:8px;color:'+c+';">'+item.modifier+'</span>':'')+
+    '</div>';
+  }).filter(Boolean).join('');
+  if(!rows)return'';
+  return'<div style="margin-top:4px;"><div style="font-size:8px;letter-spacing:0.15em;color:#444;margin-bottom:3px;">INVENTORY</div>'+rows+'</div>';
+}
+
+function renderEditInvSlots(op){
+  var container=document.getElementById('edit-inv-slots');
+  if(!container)return;
+  if(state.library.length===0){container.innerHTML='<div style="font-size:9px;color:#333;padding:4px 0;">NO ITEMS IN LIBRARY YET</div>';return;}
+  var slots=op.classis==='ASCENSIONE'?2:1;
+  var inv=Array.isArray(op.inventory)?op.inventory:[];
+  var html='';
+  for(var i=0;i<slots;i++){
+    var cur=inv[i]||'';
+    var opts='<option value="">-- EMPTY --</option>';
+    state.library.forEach(function(itm){
+      opts+='<option value="'+itm.id+'"'+(cur===itm.id?' selected':'')+'>'+itm.name+' ['+itm.type+']</option>';
+    });
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'+
+      '<span style="font-size:9px;color:#555;min-width:46px;">SLOT '+(i+1)+'</span>'+
+      '<select id="edit-inv-'+i+'" style="flex:1;background:#080808;border:0.5px solid #1e1e1c;color:#c8c4b0;font-size:10px;padding:4px 6px;border-radius:2px;">'+opts+'</select>'+
+    '</div>';
+  }
+  container.innerHTML=html;
+  container.dataset.slots=slots;
+}
+
+function getEditInv(){
+  var container=document.getElementById('edit-inv-slots');
+  if(!container)return[];
+  var slots=parseInt(container.dataset.slots)||1;
+  var inv=[];
+  for(var i=0;i<slots;i++){
+    var sel=document.getElementById('edit-inv-'+i);
+    inv.push(sel?sel.value:'');
+  }
+  return inv;
+}
+
+function render(){renderOps();renderCamp();renderMissions();renderLibrary();}
+
+function initPlayerMode(){
+  if(!IS_PLAYER)return;
+  document.getElementById('gm-toolbar').style.display='none';
+  document.getElementById('player-banner').style.display='block';
+}
+
+function copyPlayerURL(){
+  var url=window.location.href.split('?')[0]+'?view=player';
+  navigator.clipboard.writeText(url).then(function(){
+    var btn=event.target;btn.textContent='COPIED';
+    setTimeout(function(){btn.textContent='PLAYER LINK';},2000);
+  });
+}
+
+function updateClock(){
+  var n=new Date();
+  document.getElementById('clock').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0')+' LOCAL';
+}
+
+var tickerPos=0;
+var TICKER='44:IX:THETA:PERSEUS:PHASE_1_ACTIVATE // THE INARCADINE AWAITS // INNOCENCE PROVES NOTHING // AWAIT FURTHER ORDERS // CORRUPTIO CHAOTICA DETECTED // ALL UNITS MAINTAIN VIGILANCE // ';
+function scrollTicker(){tickerPos=(tickerPos+1)%TICKER.length;document.getElementById('ticker').textContent=TICKER.slice(tickerPos)+TICKER.slice(0,tickerPos);}
+
+populateWeaponSelects('op',{primary:'Lasgun',sidearm:'Laspistol',melee:'Combat Knife',utility:'Frag Grenade'});
+populateWeaponSelects('edit',{primary:'Lasgun',sidearm:'Laspistol',melee:'Combat Knife',utility:'Frag Grenade'});
+populateTMWeaponSelects('tm',{primary:'Lasgun',melee:'Combat Knife'});
+populateTMWeaponSelects('etm',{primary:'Lasgun',melee:'Combat Knife'});
+load();
+render();
+initPlayerMode();
+updateClock();
+setInterval(updateClock,1000);
+setInterval(scrollTicker,120);
+
+var _origOpen=openModal;
+openModal=function(name){_origOpen(name);if(name==='add-tm')populateLeaderSelects();};
+</script>
+<!-- ITEM LIBRARY MODAL -->
+<div class="mbg" id="modal-library">
+<div class="modal">
+  <div class="mhdr"><div class="mtit">ITEM LIBRARY</div><button class="mclose" onclick="closeModal('library')">&#x2715;</button></div>
+  <div class="mbody">
+    <div class="msec">ADD NEW ITEM</div>
+    <div class="g2">
+      <div class="field"><label>ITEM NAME</label><input id="lib-name" type="text" placeholder="e.g. BLESSED AQUILA ICON" style="text-transform:uppercase;"></div>
+      <div class="field"><label>TYPE</label><select id="lib-type">
+        <option value="Relic I">RELIC TIER I</option>
+        <option value="Relic II">RELIC TIER II</option>
+        <option value="Relic III">RELIC TIER III</option>
+        <option value="Equipment">EQUIPMENT</option>
+        <option value="Consumable">CONSUMABLE</option>
+        <option value="Special Weapon">SPECIAL WEAPON</option>
+        <option value="Weapon Attachment">WEAPON ATTACHMENT</option>
+        <option value="Misc">ARTEFACT OBSCURA</option>
+      </select></div>
+    </div>
+    <div class="field" style="margin-top:10px;"><label>EFFECT</label><input id="lib-effect" type="text" placeholder="e.g. +1 to all FTH checks while equipped"></div>
+    <div class="g2" style="margin-top:10px;">
+      <div class="field"><label>MODIFIER (optional)</label><input id="lib-mod" type="text" placeholder="e.g. +1 FTH"></div>
+      <div class="chk-row" style="margin-top:18px;"><label>SINGLE USE</label><input id="lib-consumable" type="checkbox"></div>
+    </div>
+  </div>
+  <div class="mfoot">
+    <button class="mb" onclick="closeModal('library')">CLOSE</button>
+    <button class="mb mb-p" onclick="addLibraryItem()">ADD TO LIBRARY</button>
+  </div>
+</div>
+</div>
+
+<!-- EDIT LIBRARY ITEM MODAL -->
+<div class="mbg" id="modal-edit-library">
+<div class="modal">
+  <div class="mhdr"><div class="mtit">EDIT ITEM</div><button class="mclose" onclick="closeModal('edit-library')">&#x2715;</button></div>
+  <div class="mbody">
+    <input type="hidden" id="elib-id">
+    <div class="g2">
+      <div class="field"><label>ITEM NAME</label><input id="elib-name" type="text" style="text-transform:uppercase;"></div>
+      <div class="field"><label>TYPE</label><select id="elib-type">
+        <option value="Relic I">RELIC TIER I</option>
+        <option value="Relic II">RELIC TIER II</option>
+        <option value="Relic III">RELIC TIER III</option>
+        <option value="Equipment">EQUIPMENT</option>
+        <option value="Consumable">CONSUMABLE</option>
+        <option value="Special Weapon">SPECIAL WEAPON</option>
+        <option value="Weapon Attachment">WEAPON ATTACHMENT</option>
+        <option value="Misc">ARTEFACT OBSCURA</option>
+      </select></div>
+    </div>
+    <div class="field" style="margin-top:10px;"><label>EFFECT</label><input id="elib-effect" type="text"></div>
+    <div class="g2" style="margin-top:10px;">
+      <div class="field"><label>MODIFIER (optional)</label><input id="elib-mod" type="text"></div>
+      <div class="chk-row" style="margin-top:18px;"><label>SINGLE USE</label><input id="elib-consumable" type="checkbox"></div>
+    </div>
+  </div>
+  <div class="mfoot">
+    <button class="mb" onclick="closeModal('edit-library')">CANCEL</button>
+    <button class="mb mb-p" onclick="saveLibItem()">SAVE CHANGES</button>
+  </div>
+</div>
+</div>
+
+</body>
+</html>
